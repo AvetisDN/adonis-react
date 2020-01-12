@@ -7,7 +7,9 @@ export default class Login extends Component{
         this.state = {
             formShow: false,
             email: '',
-            password: ''
+            password: '',
+            errorStatus: false,
+            errorText: ''
         }
         this.toggleForm = this.toggleForm.bind(this)
         this.loginUser = this.loginUser.bind(this)
@@ -27,9 +29,21 @@ export default class Login extends Component{
             password: this.state.password
         }, {})
             .then(response => {
-                localStorage.setItem('user', JSON.stringify(response.data))
-                this.props.loginUser();
-                this.props.setUser();
+                if(response.status === 200) {
+                    localStorage.setItem('user', JSON.stringify(response.data))
+                    this.setState({
+                        errorStatus: false,
+                        errorText: ''
+                    })
+                    this.props.loginUser();
+                    this.props.setUser();
+                } else {
+                    this.setState({
+                        errorStatus: true,
+                        errorText: 'Пользователь не найден'
+                    })
+                    console.error('Пользователь не найден')
+                }
                 //console.log(response)
             })
             .catch(error => {
@@ -49,6 +63,10 @@ export default class Login extends Component{
                 <button className={'btn btn-primary'} onClick={this.toggleForm}>Sign In</button>
                 {this.state.formShow &&
                 <div id="form">
+                    {this.state.errorStatus &&
+                    <div className='alert alert-danger'>{this.state.errorText}</div>
+                    }
+
                     <form onSubmit={this.loginUser}>
 
                         <input type="email" name='email' value={this.state.email} placeholder='E-Mail' onChange={this.changeInput}/>
